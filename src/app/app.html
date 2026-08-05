@@ -1,0 +1,378 @@
+<div class="app-shell">
+  <main class="page">
+    <section class="hero">
+      <div class="hero-content">
+        <span class="prototype-badge">
+          Demonstration prototype
+        </span>
+
+        <p class="eyebrow">
+          Secure public service
+        </p>
+
+        <h1>Payment Verification</h1>
+
+        <p class="hero-description">
+          Retrieve your payment information securely using
+          your referral number and identity number.
+        </p>
+
+        <div class="hero-features">
+          <span>
+            <span aria-hidden="true">✓</span>
+            Secure verification
+          </span>
+
+          <span>
+            <span aria-hidden="true">✓</span>
+            Automated abuse protection
+          </span>
+
+          <span>
+            <span aria-hidden="true">✓</span>
+            Protected payment search
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="service-section">
+      <div class="service-layout">
+        <section class="form-panel">
+          <header class="form-header">
+            <div>
+              <p class="section-kicker">
+                Payment search
+              </p>
+
+              <h2>Enter your payment details</h2>
+
+              <p>
+                Enter the information exactly as displayed
+                in your payment notice.
+              </p>
+            </div>
+
+            <div
+              class="secure-icon"
+              aria-label="Secure form"
+            >
+              <span aria-hidden="true">✓</span>
+            </div>
+          </header>
+
+          <form
+            [formGroup]="searchForm"
+            (ngSubmit)="search()"
+            novalidate
+            [attr.aria-busy]="loading"
+          >
+            <div class="form-field">
+              <label for="referralNumber">
+                Referral number
+                <span class="required">*</span>
+              </label>
+
+              <span
+                id="referralHelp"
+                class="field-hint"
+              >
+                Enter 8–30 letters, numbers or hyphens.
+              </span>
+
+              <input
+                id="referralNumber"
+                type="text"
+                formControlName="referralNumber"
+                maxlength="30"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                placeholder="Example: REF-8K29-PLQ7"
+                aria-describedby="referralHelp referralError"
+              >
+
+              @if (
+                searchForm.controls.referralNumber.touched &&
+                searchForm.controls.referralNumber.invalid
+              ) {
+                <small
+                  id="referralError"
+                  class="field-error"
+                  role="alert"
+                >
+                  Enter a valid referral number.
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="identityNumber">
+                IC or passport number
+                <span class="required">*</span>
+              </label>
+
+              <span
+                id="identityHelp"
+                class="field-hint"
+              >
+                Your identity number is hidden for privacy.
+              </span>
+
+              <input
+                id="identityNumber"
+                type="password"
+                formControlName="identityNumber"
+                maxlength="20"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Enter your IC or passport number"
+                aria-describedby="identityHelp identityError"
+              >
+
+              @if (
+                searchForm.controls.identityNumber.touched &&
+                searchForm.controls.identityNumber.invalid
+              ) {
+                <small
+                  id="identityError"
+                  class="field-error"
+                  role="alert"
+                >
+                  Enter 6–20 letters or numbers.
+                </small>
+              }
+            </div>
+
+            <button
+              class="primary-button"
+              type="submit"
+              [disabled]="loading"
+            >
+              @if (loading) {
+                <span
+                  class="spinner"
+                  aria-hidden="true"
+                ></span>
+
+                Verifying information...
+              } @else {
+                Search payment
+
+                <span
+                  class="button-arrow"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              }
+            </button>
+          </form>
+
+          @if (errorMessage) {
+            <div
+              class="alert alert-error"
+              role="alert"
+            >
+              <div
+                class="alert-symbol"
+                aria-hidden="true"
+              >
+                !
+              </div>
+
+              <div>
+                <strong>
+                  Unable to complete the search
+                </strong>
+
+                <p>{{ errorMessage }}</p>
+              </div>
+            </div>
+          }
+
+          @if (result) {
+            <section
+              class="result-section"
+              aria-live="polite"
+            >
+              <header class="result-header">
+                <div>
+                  <p class="section-kicker">
+                    Search result
+                  </p>
+
+                  <h2>Payment information</h2>
+                </div>
+
+                <span
+                  class="status-badge"
+                  [class.status-paid]="
+                    result.paymentStatus.toLowerCase() ===
+                    'paid'
+                  "
+                  [class.status-pending]="
+                    result.paymentStatus
+                      .toLowerCase()
+                      .includes('pending')
+                  "
+                >
+                  {{ result.paymentStatus }}
+                </span>
+              </header>
+
+              <div class="result-grid">
+                <article class="result-item">
+                  <span>Payment reference</span>
+
+                  <strong>
+                    {{ result.paymentReference }}
+                  </strong>
+                </article>
+
+                <article class="result-item">
+                  <span>Payment amount</span>
+
+                  <strong class="payment-amount">
+                    RM {{ result.amount | number: '1.2-2' }}
+                  </strong>
+                </article>
+
+                <article class="result-item">
+                  <span>Payment status</span>
+
+                  <strong>
+                    {{ result.paymentStatus }}
+                  </strong>
+                </article>
+
+                <article class="result-item">
+                  <span>Due date</span>
+
+                  <strong>
+                    {{ result.dueDate }}
+                  </strong>
+                </article>
+              </div>
+
+              <div class="result-message">
+                <span aria-hidden="true">i</span>
+
+                <p>
+                  Keep your payment reference for future
+                  enquiries and payment-related communication.
+                </p>
+              </div>
+            </section>
+          }
+        </section>
+
+        <aside class="information-panel">
+          <div class="illustration-area">
+            <div class="illustration-copy">
+              <p>Protected verification</p>
+
+              <h2>
+                Your payment information is protected
+              </h2>
+
+              <span>
+                Multiple security checks are completed before
+                payment records are retrieved.
+              </span>
+            </div>
+
+            <div
+              class="illustration-graphic"
+              aria-hidden="true"
+            >
+              <div class="graphic-circle circle-one"></div>
+              <div class="graphic-circle circle-two"></div>
+
+              <div class="document-shape">
+                <span class="document-line"></span>
+                <span class="document-line short-line"></span>
+                <span class="document-line"></span>
+
+                <div class="document-check">
+                  ✓
+                </div>
+              </div>
+
+              <div class="security-shield">
+                <span>✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="security-information">
+            <h3>Security measures</h3>
+
+            <ul>
+              <li>
+                <span aria-hidden="true">✓</span>
+                Google reCAPTCHA v3 verification
+              </li>
+
+              <li>
+                <span aria-hidden="true">✓</span>
+                Server-side input validation
+              </li>
+
+              <li>
+                <span aria-hidden="true">✓</span>
+                Protection against repeated searches
+              </li>
+
+              <li>
+                <span aria-hidden="true">✓</span>
+                Generic responses to protect personal data
+              </li>
+            </ul>
+
+            <div class="help-box">
+              <div
+                class="help-icon"
+                aria-hidden="true"
+              >
+                ?
+              </div>
+
+              <div>
+                <strong>Need assistance?</strong>
+
+                <p>
+                  Confirm that your details match the
+                  information shown in your official payment
+                  notice.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <p class="prototype-note">
+        This interface is a demonstration prototype and is not
+        an official production service. Google reCAPTCHA is
+        used to reduce automated searches and abuse.
+      </p>
+    </section>
+  </main>
+
+  <footer class="main-footer">
+    <div class="footer-content">
+      <div>
+        <strong>Secure Payment Verification</strong>
+
+        <p>
+          Demonstration public payment search service
+        </p>
+      </div>
+
+      <p class="copyright">
+        © 2026 Payment Verification Prototype
+      </p>
+    </div>
+  </footer>
+</div>
