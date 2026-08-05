@@ -68,14 +68,36 @@ export class App {
   private readonly changeDetector =
     inject(ChangeDetectorRef);
 
+  /*
+   * Public classic Google reCAPTCHA v3 site key.
+   * Never place the secret key in Angular.
+   */
   private readonly recaptchaSiteKey =
     '6LeXf1ItAAAAACxAsA4hZv-24cLzKP8SQ2SGWNpT';
 
+  /*
+   * Must exactly match the expected action configured
+   * in the Spring Boot backend.
+   */
   private readonly recaptchaAction =
     'public_payment_search';
 
   private readonly apiUrl =
     'https://payment-verification-backend.onrender.com/api/public-payments/search';
+
+  /*
+   * reCAPTCHA normally responds quickly, so token
+   * generation keeps a shorter timeout.
+   */
+  private readonly recaptchaTimeoutMs =
+    10_000;
+
+  /*
+   * Render free services may require additional time
+   * to wake after a period of inactivity.
+   */
+  private readonly apiTimeoutMs =
+    75_000;
 
   loading = false;
   errorMessage = '';
@@ -168,7 +190,9 @@ export class App {
   }
 
   private isRecaptchaConfigured(): boolean {
-    return this.recaptchaSiteKey.trim().length > 0;
+    return (
+      this.recaptchaSiteKey.trim().length > 0
+    );
   }
 
   private executeRecaptchaWithTimeout():
@@ -184,7 +208,7 @@ export class App {
               'reCAPTCHA token generation timed out.'
             )
           );
-        }, 10_000);
+        }, this.recaptchaTimeoutMs);
       });
 
     return Promise.race([
@@ -248,7 +272,11 @@ export class App {
         request
       )
       .pipe(
-        timeout(10_000),
+        /*
+         * The longer timeout allows a sleeping Render
+         * free service enough time to start.
+         */
+        timeout(this.apiTimeoutMs),
 
         finalize(() => {
           this.loading = false;
@@ -307,7 +335,7 @@ export class App {
 
     if (error.status === 0) {
       this.errorMessage =
-        'The payment service did not respond. Please confirm that Spring Boot is running.';
+        'The payment service could not be reached. Please try again shortly.';
 
       this.refreshView();
       return;
@@ -322,7 +350,8 @@ export class App {
     }
 
     const backendError =
-      error.error as BackendErrorResponse | null;
+      error.error as
+        BackendErrorResponse | null;
 
     console.warn(
       'Public search was rejected:',
@@ -330,6 +359,10 @@ export class App {
         'No backend error message returned.'
     );
 
+    /*
+     * A generic response helps prevent attackers from
+     * determining whether a referral or identity exists.
+     */
     this.errorMessage =
       'The information entered does not match our records.';
 
