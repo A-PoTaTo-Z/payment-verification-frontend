@@ -68,26 +68,14 @@ export class App {
   private readonly changeDetector =
     inject(ChangeDetectorRef);
 
-  /*
-   * Classic Google reCAPTCHA v3 site key.
-   *
-   * Never place the secret key in Angular.
-   */
   private readonly recaptchaSiteKey =
     '6LeXf1ItAAAAACxAsA4hZv-24cLzKP8SQ2SGWNpT';
 
-  /*
-   * This action must exactly match:
-   *
-   * app.recaptcha.expected-action
-   *
-   * in Spring Boot application.properties.
-   */
   private readonly recaptchaAction =
     'public_payment_search';
 
   private readonly apiUrl =
-    'http://localhost:8080/api/public-payments/search';
+    'https://payment-verification-backend.onrender.com/api/public-payments/search';
 
   loading = false;
   errorMessage = '';
